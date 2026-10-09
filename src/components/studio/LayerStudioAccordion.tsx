@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { STICKER_CATEGORIES } from "@/lib/sticker-library";
 import { ArrowDown, ArrowUp, Eye, EyeOff, GripVertical, Layers, Plus, Trash2 } from "lucide-react";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
@@ -359,5 +360,28 @@ export function LayerStudioAccordion({ value, onChange, blocks }: Props) {
         )}
       </AccordionContent>
     </AccordionItem>
+  );
+}
+
+function StickerPicker({ onPick }: { onPick: (emoji: string) => void }) {
+  const [cat, setCat] = useState(STICKER_CATEGORIES[0]!.id);
+  const current = STICKER_CATEGORIES.find((c) => c.id === cat) ?? STICKER_CATEGORIES[0]!;
+  return (
+    <div className="space-y-2 rounded-md border border-border p-2">
+      <div className="flex flex-wrap gap-1">
+        {STICKER_CATEGORIES.map((c) => (
+          <Button key={c.id} type="button" size="sm" variant={c.id === cat ? "default" : "ghost"} className="h-7 px-2 text-xs" onClick={() => setCat(c.id)}>
+            {c.label}
+          </Button>
+        ))}
+      </div>
+      <div className="grid grid-cols-8 gap-1">
+        {current.stickers.map((s) => (
+          <button key={s} type="button" className="rounded p-1 text-lg hover:bg-muted" onClick={() => onPick(s)} aria-label={`Sticker ${s}`}>
+            {s}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
