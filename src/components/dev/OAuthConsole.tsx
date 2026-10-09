@@ -75,27 +75,57 @@ export function OAuthConsole() {
     }
   }, [list]);
 
-  useEffect(() => {
+  const [checkFailed, setCheckFailed] = useState(false);
+  const check = useCallback(() => {
+    setCheckFailed(false);
+    setVerified(null);
     access()
       .then(async (r) => {
         setVerified(r.verified);
         if (r.verified) await refresh();
       })
-      .catch(() => setVerified(false));
+      .catch(() => {
+        // A failed check is "unknown", never "not verified".
+        setCheckFailed(true);
+        setVerified(false);
+      });
   }, [access, refresh]);
+
+  useEffect(() => {
+    check();
+  }, [check]);
 
   if (verified === null) {
     return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />;
   }
 
-  if (!verified) {
+  if (checkFailed) {
     return (
       <section className="rounded-2xl border border-border bg-card p-5">
         <h2 className="font-display text-xl text-foreground">Login met ROUT</h2>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          De Developer Console is beschikbaar zodra je account geverifieerd is. Zo weten gebruikers
-          altijd wie er achter een app zit.
+          We konden je toegang even niet controleren. Probeer het opnieuw.
         </p>
+        <Button className="mt-4" variant="outline" onClick={check}>
+          <RefreshCw className="mr-2 h-4 w-4" /> Opnieuw proberen
+        </Button>
+      </section>
+    );
+  }
+
+  if (!verified) {
+    return (
+      <section className="rounded-2xl border border-border bg-card p-6">
+        <Badge variant="secondary">Alleen voor geverifieerde leden</Badge>
+        <h2 className="mt-3 font-display text-xl text-foreground">Bouw soevereine apps met ROUT</h2>
+        <p className="mt-1.5 max-w-prose text-sm text-muted-foreground">
+          Met de Developer Console maak je "Login met ROUT"-apps en API-sleutels. Om spam te
+          voorkomen en het vertrouwen in het ecosysteem te bewaken, is dit voorbehouden aan
+          geverifieerde accounts. Gebruikers zien zo altijd wie er achter een app zit.
+        </p>
+        <Button className="mt-4" asChild>
+          <a href="/verify">Start verificatie</a>
+        </Button>
       </section>
     );
   }
