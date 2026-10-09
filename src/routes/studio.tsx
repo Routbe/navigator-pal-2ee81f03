@@ -4,17 +4,17 @@ import Page from "@/pages/Studio";
 export const Route = createFileRoute("/studio")({
   head: () => ({
     meta: [
-      { title: "QR Studio — ontwerp je QR-code | ROUT" },
+      { title: "Profile Hub Studio — je eigen link-in-bio | ROUT" },
       {
         name: "description",
         content:
-          "Ontwerp QR-codes met eigen kleuren, vormen, frames en logo. Exporteer scherp in PNG, SVG of PDF.",
+          "Bouw je soevereine link-in-bio: blokken, ontwerp, subdomein en verificatie. Bewerk in concept en publiceer wanneer je klaar bent.",
       },
-      { property: "og:title", content: "QR Studio — ontwerp je QR-code | ROUT" },
+      { property: "og:title", content: "Profile Hub Studio — je eigen link-in-bio | ROUT" },
       {
         property: "og:description",
         content:
-          "Ontwerp QR-codes met eigen kleuren, vormen, frames en logo. Exporteer scherp in PNG, SVG of PDF.",
+          "Bouw je soevereine link-in-bio: blokken, ontwerp, subdomein en verificatie. Bewerk in concept en publiceer wanneer je klaar bent.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
