@@ -36,3 +36,5 @@
 - Studio autosaves private drafts and publishes with revision checks; public reads never use drafts. Why: incomplete edits stay private.
 - Phone verification uses a provider-neutral contract led by the Android gateway; chat channels count only after server confirmation. Why: sovereignty without unproven claims.
 
+
+- The layered Design Studio is stored as one JSON string in `display_prefs.designLayers` and normalized by `normalizeDesignLayers` on the server and in the renderer. Why: display_prefs only allows flat values, and client input must never reach the page unchecked.
