@@ -7,6 +7,7 @@ import {
   Terminal,
   Bot,
   Gauge,
+  Network,
   KeyRound,
   LayoutGrid,
   Link2,
@@ -46,6 +47,7 @@ const APP_NAV = [
   { to: "/console/apps/$appId/auth-logs", label: "Auth logs", icon: Terminal },
   { to: "/console/apps/$appId/ai-prompts", label: "AI Prompts", icon: Bot },
   { to: "/console/apps/$appId/schema", label: "Schema", icon: Database },
+  { to: "/console/apps/$appId/architecture", label: "Architecture", icon: Network },
   { to: "/console/apps/$appId/advanced", label: "Advanced", icon: SlidersHorizontal },
 ] as const;
 

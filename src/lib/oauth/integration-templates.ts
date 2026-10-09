@@ -29,6 +29,20 @@ const TOOLS: Record<AiTool, string> = {
   generic: "You are an expert full-stack engineer.",
 };
 
+/** Claims returned per scope (mirrors identityClaims in provider.server.ts). */
+export const SCOPE_CLAIMS: Record<string, string[]> = {
+  openid: ["sub"],
+  profile: ["preferred_username", "name", "picture"],
+  email: ["email", "email_verified"],
+  linked_accounts: ["linked_accounts[].provider", "linked_accounts[].account_id"],
+};
+
+export function claimsForScopes(scopes: string[]): string[] {
+  const out = new Set<string>(["sub"]);
+  for (const s of scopes) for (const c of SCOPE_CLAIMS[s] ?? []) out.add(c);
+  return [...out];
+}
+
 export function buildAiPrompt(app: TemplateApp, tool: AiTool, stack: Stack): string {
   const scopes = app.scopes.join(" ");
   const redirect = app.redirectUris[0] ?? "https://yourapp.com/auth/callback";
@@ -43,6 +57,7 @@ export function buildAiPrompt(app: TemplateApp, tool: AiTool, stack: Stack): str
     `- Scopes: ${scopes}`,
     `- Redirect URI: ${redirect}`,
     `- PKCE: ${app.requirePkce ? "REQUIRED (S256)" : "recommended (S256)"}`,
+    `- Claims you will receive (userinfo / id_token): ${claimsForScopes(app.scopes).join(", ")}`,
     "",
     "## Flow requirements",
     "1. Fetch endpoints from the Discovery URL (do not hardcode them).",

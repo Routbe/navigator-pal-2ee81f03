@@ -1,7 +1,7 @@
 # Roadmap
 - [x] A1-3 Console-toegang: centrale check + nette vergrendelde pagina
 - [ ] A4 Wizard "Nieuwe app" end-to-end testen (wacht op DATABASE_URL in deze omgeving)
-- [ ] B Console-inhoud: Schema/AI-sjablonen, claims per scope, Architectuur-tab
+- [x] B Console-inhoud: Schema/AI-sjablonen, claims per scope, Architectuur-tab
 - [ ] C Studio concept/publiceren afronden + faviconset
 - [ ] D Gelaagde Design Studio
 - [ ] E Bibliotheek (kaders, 100+ decoraties, effecten)
