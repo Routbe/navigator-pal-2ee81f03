@@ -125,6 +125,7 @@ import { Route as ApiPublicWebhooksBankingRouteImport } from './routes/api_.publ
 import { Route as AuthenticatedConsoleAppsAppIdIndexRouteImport } from './routes/_authenticated/console.apps.$appId.index'
 import { Route as AuthenticatedConsoleAppsAppIdAdvancedRouteImport } from './routes/_authenticated/console.apps.$appId.advanced'
 import { Route as AuthenticatedConsoleAppsAppIdAiPromptsRouteImport } from './routes/_authenticated/console.apps.$appId.ai-prompts'
+import { Route as AuthenticatedConsoleAppsAppIdArchitectureRouteImport } from './routes/_authenticated/console.apps.$appId.architecture'
 import { Route as AuthenticatedConsoleAppsAppIdAuthLogsRouteImport } from './routes/_authenticated/console.apps.$appId.auth-logs'
 import { Route as AuthenticatedConsoleAppsAppIdBrandingRouteImport } from './routes/_authenticated/console.apps.$appId.branding'
 import { Route as AuthenticatedConsoleAppsAppIdCredentialsRouteImport } from './routes/_authenticated/console.apps.$appId.credentials'
@@ -746,6 +747,12 @@ const AuthenticatedConsoleAppsAppIdAiPromptsRoute =
     path: '/ai-prompts',
     getParentRoute: () => AuthenticatedConsoleAppsAppIdRoute,
   } as any)
+const AuthenticatedConsoleAppsAppIdArchitectureRoute =
+  AuthenticatedConsoleAppsAppIdArchitectureRouteImport.update({
+    id: '/architecture',
+    path: '/architecture',
+    getParentRoute: () => AuthenticatedConsoleAppsAppIdRoute,
+  } as any)
 const AuthenticatedConsoleAppsAppIdAuthLogsRoute =
   AuthenticatedConsoleAppsAppIdAuthLogsRouteImport.update({
     id: '/auth-logs',
@@ -922,6 +929,7 @@ export interface FileRoutesByFullPath {
   '/console/apps/': typeof AuthenticatedConsoleAppsIndexRoute
   '/console/apps/$appId/advanced': typeof AuthenticatedConsoleAppsAppIdAdvancedRoute
   '/console/apps/$appId/ai-prompts': typeof AuthenticatedConsoleAppsAppIdAiPromptsRoute
+  '/console/apps/$appId/architecture': typeof AuthenticatedConsoleAppsAppIdArchitectureRoute
   '/console/apps/$appId/auth-logs': typeof AuthenticatedConsoleAppsAppIdAuthLogsRoute
   '/console/apps/$appId/branding': typeof AuthenticatedConsoleAppsAppIdBrandingRoute
   '/console/apps/$appId/credentials': typeof AuthenticatedConsoleAppsAppIdCredentialsRoute
@@ -1045,6 +1053,7 @@ export interface FileRoutesByTo {
   '/console/apps': typeof AuthenticatedConsoleAppsIndexRoute
   '/console/apps/$appId/advanced': typeof AuthenticatedConsoleAppsAppIdAdvancedRoute
   '/console/apps/$appId/ai-prompts': typeof AuthenticatedConsoleAppsAppIdAiPromptsRoute
+  '/console/apps/$appId/architecture': typeof AuthenticatedConsoleAppsAppIdArchitectureRoute
   '/console/apps/$appId/auth-logs': typeof AuthenticatedConsoleAppsAppIdAuthLogsRoute
   '/console/apps/$appId/branding': typeof AuthenticatedConsoleAppsAppIdBrandingRoute
   '/console/apps/$appId/credentials': typeof AuthenticatedConsoleAppsAppIdCredentialsRoute
@@ -1174,6 +1183,7 @@ export interface FileRoutesById {
   '/_authenticated/console/apps/': typeof AuthenticatedConsoleAppsIndexRoute
   '/_authenticated/console/apps/$appId/advanced': typeof AuthenticatedConsoleAppsAppIdAdvancedRoute
   '/_authenticated/console/apps/$appId/ai-prompts': typeof AuthenticatedConsoleAppsAppIdAiPromptsRoute
+  '/_authenticated/console/apps/$appId/architecture': typeof AuthenticatedConsoleAppsAppIdArchitectureRoute
   '/_authenticated/console/apps/$appId/auth-logs': typeof AuthenticatedConsoleAppsAppIdAuthLogsRoute
   '/_authenticated/console/apps/$appId/branding': typeof AuthenticatedConsoleAppsAppIdBrandingRoute
   '/_authenticated/console/apps/$appId/credentials': typeof AuthenticatedConsoleAppsAppIdCredentialsRoute
@@ -1303,6 +1313,7 @@ export interface FileRouteTypes {
     | '/console/apps/'
     | '/console/apps/$appId/advanced'
     | '/console/apps/$appId/ai-prompts'
+    | '/console/apps/$appId/architecture'
     | '/console/apps/$appId/auth-logs'
     | '/console/apps/$appId/branding'
     | '/console/apps/$appId/credentials'
@@ -1426,6 +1437,7 @@ export interface FileRouteTypes {
     | '/console/apps'
     | '/console/apps/$appId/advanced'
     | '/console/apps/$appId/ai-prompts'
+    | '/console/apps/$appId/architecture'
     | '/console/apps/$appId/auth-logs'
     | '/console/apps/$appId/branding'
     | '/console/apps/$appId/credentials'
@@ -1554,6 +1566,7 @@ export interface FileRouteTypes {
     | '/_authenticated/console/apps/'
     | '/_authenticated/console/apps/$appId/advanced'
     | '/_authenticated/console/apps/$appId/ai-prompts'
+    | '/_authenticated/console/apps/$appId/architecture'
     | '/_authenticated/console/apps/$appId/auth-logs'
     | '/_authenticated/console/apps/$appId/branding'
     | '/_authenticated/console/apps/$appId/credentials'
@@ -2462,6 +2475,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConsoleAppsAppIdAiPromptsRouteImport
       parentRoute: typeof AuthenticatedConsoleAppsAppIdRoute
     }
+    '/_authenticated/console/apps/$appId/architecture': {
+      id: '/_authenticated/console/apps/$appId/architecture'
+      path: '/architecture'
+      fullPath: '/console/apps/$appId/architecture'
+      preLoaderRoute: typeof AuthenticatedConsoleAppsAppIdArchitectureRouteImport
+      parentRoute: typeof AuthenticatedConsoleAppsAppIdRoute
+    }
     '/_authenticated/console/apps/$appId/auth-logs': {
       id: '/_authenticated/console/apps/$appId/auth-logs'
       path: '/auth-logs'
@@ -2579,6 +2599,7 @@ const AuthenticatedAdminRouteWithChildren =
 interface AuthenticatedConsoleAppsAppIdRouteChildren {
   AuthenticatedConsoleAppsAppIdAdvancedRoute: typeof AuthenticatedConsoleAppsAppIdAdvancedRoute
   AuthenticatedConsoleAppsAppIdAiPromptsRoute: typeof AuthenticatedConsoleAppsAppIdAiPromptsRoute
+  AuthenticatedConsoleAppsAppIdArchitectureRoute: typeof AuthenticatedConsoleAppsAppIdArchitectureRoute
   AuthenticatedConsoleAppsAppIdAuthLogsRoute: typeof AuthenticatedConsoleAppsAppIdAuthLogsRoute
   AuthenticatedConsoleAppsAppIdBrandingRoute: typeof AuthenticatedConsoleAppsAppIdBrandingRoute
   AuthenticatedConsoleAppsAppIdCredentialsRoute: typeof AuthenticatedConsoleAppsAppIdCredentialsRoute
@@ -2597,6 +2618,8 @@ const AuthenticatedConsoleAppsAppIdRouteChildren: AuthenticatedConsoleAppsAppIdR
       AuthenticatedConsoleAppsAppIdAdvancedRoute,
     AuthenticatedConsoleAppsAppIdAiPromptsRoute:
       AuthenticatedConsoleAppsAppIdAiPromptsRoute,
+    AuthenticatedConsoleAppsAppIdArchitectureRoute:
+      AuthenticatedConsoleAppsAppIdArchitectureRoute,
     AuthenticatedConsoleAppsAppIdAuthLogsRoute:
       AuthenticatedConsoleAppsAppIdAuthLogsRoute,
     AuthenticatedConsoleAppsAppIdBrandingRoute:
