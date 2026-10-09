@@ -759,10 +759,36 @@ export async function identityClaims(
 
 /** De console staat alleen open voor geverifieerde (betalende) leden. */
 export async function isVerifiedDeveloper(userId: string): Promise<boolean> {
-  const rows = (await sql`select coalesce(verified,false) or coalesce(is_paid,false)
-      or coalesce(is_early_believer,false) as ok
-    from public.profiles where id = ${userId} limit 1`) as Row[];
-  return Boolean(rows[0]?.["ok"]);
+  const { canUseDeveloperConsole } = await import("./console-access-rules");
+  // Each signal is read separately so a missing optional column/table never
+  // turns into a false "not verified".
+  const safe = async (q: () => Promise<unknown>): Promise<Row[]> => {
+    try {
+      return (await q()) as Row[];
+    } catch (error) {
+      console.warn("[console-access] signal skipped:", (error as Error).message);
+      return [];
+    }
+  };
+  const [profile] = await safe(() =>
+    sql`select to_jsonb(p) as p from public.profiles p where p.id = ${userId} limit 1`,
+  );
+  const p = (profile?.["p"] ?? {}) as Record<string, unknown>;
+  const admin = await safe(() =>
+    sql`select 1 from public.user_roles where user_id = ${userId} and role::text = 'admin' limit 1`,
+  );
+  const handle = await safe(() =>
+    sql`select 1 from public.approved_handles where user_id = ${userId} and status = 'claimed' limit 1`,
+  );
+  return canUseDeveloperConsole({
+    verified: p["verified"] === true,
+    isPaid: p["is_paid"] === true,
+    isEarlyBeliever: p["is_early_believer"] === true,
+    isBanned: p["is_banned"] === true,
+    isSuspended: p["is_suspended"] === true,
+    hasClaimedRootHandle: handle.length > 0,
+    isAdmin: admin.length > 0,
+  });
 }
 
 /** Verifieert een door ROUT uitgegeven access-token en geeft sub + scopes terug. */
