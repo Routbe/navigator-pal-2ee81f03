@@ -1,1 +1,2 @@
-- The Live Auth debugger (`oauth_debug_events`, db/56) is written only via `logOAuthEvent()` in `debug-events.server.ts`, which strips query strings and never stores IPs, user ids, tokens or codes. Why: debug data is developer-facing and must stay PII-free.
+## OAuth provider rules
+- OAuth client console settings (publishing status, PKCE, token TTL, IP allowlist, account discovery) are enforced in `provider.server.ts`/`console.functions.ts` (this folder) server-side, never only in the UI. Why: the console is the developer's control plane; the OIDC endpoints are the security boundary.

@@ -1,4 +1,13 @@
 import { cn } from "@/lib/utils";
+import {
+  backgroundLayerStyle,
+  blockStyleOverride,
+  normalizeDesignLayers,
+  sectionOrder,
+  sectionVisible,
+  type Decoration,
+  type SectionId,
+} from "@/lib/design-layers";
 import { useEffect, useRef, useState } from "react";
 import { BadgeCheck, Mail, UserPlus, Users } from "lucide-react";
 import {
@@ -100,6 +109,10 @@ export function ProfileView({
   const { t: tr, locale } = useI18n();
   const t = themeOf(profile.theme);
   const prefs = parseDisplayPrefs(profile.display_prefs);
+  const layers = normalizeDesignLayers(prefs.designLayers);
+  const lv = (id: SectionId) => sectionVisible(layers, id);
+  const sectionStyle = (id: SectionId) => ({ order: sectionOrder(layers, id), display: lv(id) ? undefined : "none" });
+  const fxOn = lv("fx");
   const blocks = scheduledBlocks(profile.blocks).filter(
     (b) =>
       b.value.trim() !== "" ||
@@ -225,10 +238,10 @@ export function ProfileView({
   // wanneer het besturingssysteem minder beweging vraagt. Het effect speelt
   // binnen deze pagina zelf, dus ook netjes binnen de Studio-preview.
   useEffect(() => {
-    if (prefs.visitEffect === "none") return;
+    if (prefs.visitEffect === "none" || !fxOn) return;
     const stop = runVisitEffect(prefs.visitEffect, { container: mainRef.current });
     return stop;
-  }, [prefs.visitEffect]);
+  }, [prefs.visitEffect, fxOn]);
 
   // "Test effect" in de Studio: speel het af in deze preview, niet over de
   // volledige studiopagina.
@@ -270,6 +283,11 @@ export function ProfileView({
       {overlay && (
         <div aria-hidden className="pointer-events-none absolute inset-0 -z-10" style={overlay} />
       )}
+      {layers.backgrounds
+        .filter((b) => b.visible)
+        .map((b) => (
+          <div key={b.id} aria-hidden className="pointer-events-none absolute inset-0 -z-10" style={backgroundLayerStyle(b)} />
+        ))}
       {banner && (
         <div
           aria-hidden
@@ -280,6 +298,7 @@ export function ProfileView({
       <div
         className={`relative mx-auto flex w-full flex-col items-center ${wide ? "max-w-2xl" : "max-w-md"}`}
       >
+        <div className="flex w-full flex-col items-center" style={sectionStyle("avatar")}>
         <AvatarFrameWrapper
           frame={prefs.avatarFrame}
           theme={t}
@@ -487,6 +506,9 @@ export function ProfileView({
             Mode 1 = icoon + gebruikersnaam met vinkje ernaast; mode 2 = alleen
             het icoon met een micro-vinkje over de rechterbovenhoek. */}
         {prefs.socialPosition === "top" && socialRow}
+        </div>
+
+        <div className="flex w-full flex-col items-center" style={sectionStyle("blocks")}>
 
          <div className={`mt-8 grid w-full gap-3 ${wide ? "lg:grid-cols-2" : "grid-cols-1"}`}>
           {blocks.length === 0 && (
@@ -572,7 +594,7 @@ export function ProfileView({
                   buttonEffectClass(prefs.buttonEffect),
                   ctaClass(b.id),
                 )}
-                style={buttonStyle}
+                style={{ ...buttonStyle, ...blockStyleOverride(layers.blockStyles[b.id]) }}
               >
                 {b.thumbnailUrl ? (
                   <img
@@ -596,17 +618,21 @@ export function ProfileView({
         </div>
 
         {prefs.socialPosition === "bottom" && socialRow}
+        </div>
 
         <footer
           className="mt-10 flex w-full flex-col items-center gap-2"
-          style={footerBlockStyle(prefs.footerStyle, prefs.footerAccent, {
-            border: t.border,
-            card: t.card,
-            muted: t.muted,
-          })}
+          style={{
+            ...footerBlockStyle(prefs.footerStyle, prefs.footerAccent, {
+              border: t.border,
+              card: t.card,
+              muted: t.muted,
+            }),
+            order: sectionOrder(layers, "footer"),
+          }}
         >
-          {prefs.socialPosition === "footer" && socialRow}
-          {prefs.footerTagline &&
+          {lv("footer") && prefs.socialPosition === "footer" && socialRow}
+          {lv("footer") && prefs.footerTagline &&
             (prefs.footerStyle === "ticker" ? (
               <div className="w-full overflow-hidden">
                 <p
@@ -635,6 +661,13 @@ export function ProfileView({
           )}
         </footer>
       </div>
+      {lv("decorations") && layers.decorations.some((d) => d.visible) && (
+        <div aria-hidden className="pointer-events-none absolute inset-0 z-10 overflow-hidden">
+          {layers.decorations.filter((d) => d.visible).map((d) => (
+            <DecorationShape key={d.id} d={d} />
+          ))}
+        </div>
+      )}
     </main>
   );
 }
@@ -682,5 +715,34 @@ export function ProfileLookupError({
         </button>
       )}
     </div>
+  );
+}
+
+/** One free-placed decoration (emoji or simple shape) on top of the page. */
+export function DecorationShape({ d }: { d: Decoration }) {
+  const pos = {
+    left: `${d.x}%`,
+    top: `${d.y}%`,
+    width: d.size,
+    height: d.size,
+    opacity: d.opacity / 100,
+    transform: `translate(-50%, -50%) rotate(${d.rotation}deg)`,
+  } as const;
+  if (d.kind === "emoji")
+    return (
+      <span className="absolute flex items-center justify-center leading-none" style={{ ...pos, fontSize: d.size * 0.85 }}>
+        {d.emoji}
+      </span>
+    );
+  const paths: Record<string, string> = {
+    star: "M50 4l13 31 33 3-25 22 8 33-29-18-29 18 8-33L4 38l33-3z",
+    blob: "M52 6c20 2 40 18 42 40s-14 46-40 48S6 80 6 54 32 4 52 6z",
+  };
+  if (d.kind === "circle" || d.kind === "square")
+    return <span className={`absolute ${d.kind === "circle" ? "rounded-full" : "rounded-md"}`} style={{ ...pos, background: d.color }} />;
+  return (
+    <svg className="absolute" style={pos} viewBox="0 0 100 100">
+      <path d={paths[d.kind]} fill={d.color} />
+    </svg>
   );
 }
