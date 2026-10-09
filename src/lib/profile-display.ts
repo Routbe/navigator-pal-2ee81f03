@@ -1,3 +1,4 @@
+import { isEmptyLayers, normalizeDesignLayers, serializeDesignLayers } from "./design-layers";
 import { stripBioLinks } from "@/lib/bio-rules";
 /**
  * Weergavevoorkeuren van een publiek ROUT-profiel.
@@ -207,6 +208,8 @@ export interface ProfileDisplayPrefs {
   ctaBlockId: string | null;
   /** Accent-animatie voor die link. */
   ctaEffect: "none" | "glow" | "pulse" | "shimmer";
+  /** Layered Design Studio as normalized JSON (see design-layers.ts); "" = off. */
+  designLayers: string;
 }
 
 /** Alle designvelden zitten in dezelfde JSON-blob. */
@@ -262,6 +265,7 @@ export const DEFAULT_DISPLAY_PREFS: ProfileDisplayPrefs = {
   locationBadge: null,
   locationVisible: true,
   favoritesLayout: "grid",
+  designLayers: "",
   ctaBlockId: null,
   ctaEffect: "none",
   ...DEFAULT_DESIGN_PREFS,
@@ -476,6 +480,7 @@ export function parseDisplayPrefs(raw: unknown): ProfileDisplayPrefs {
     favoritesLayout: oneOf(r["favoritesLayout"], [...FAVORITE_LAYOUTS], "grid"),
     ctaBlockId: textOrNull(r["ctaBlockId"], 60),
     ctaEffect: oneOf(r["ctaEffect"], ["none", "glow", "pulse", "shimmer"], "none"),
+    designLayers: normalizeLayersPref(r["designLayers"]),
     ...normalizeDesignPrefs(r),
   };
 }
@@ -784,4 +789,12 @@ export function bioForLocale(
   const first = availableBioLocales(prefs)[0];
   if (first) return prefs[BIO_KEY[first]];
   return fallback?.trim() || null;
+}
+
+
+/** Normalizes the stored layer JSON; returns "" when nothing is set. */
+export function normalizeLayersPref(raw: unknown): string {
+  if (typeof raw !== "string" || !raw) return "";
+  const layers = normalizeDesignLayers(raw);
+  return isEmptyLayers(layers) ? "" : serializeDesignLayers(layers);
 }

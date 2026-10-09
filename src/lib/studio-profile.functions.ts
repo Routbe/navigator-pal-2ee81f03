@@ -1,3 +1,4 @@
+import { normalizeLayersPref } from "./profile-display";
 import { createServerFn } from "@tanstack/react-start";
 import { requireAuth } from "@/lib/auth/middleware";
 import { z } from "zod";
@@ -102,7 +103,15 @@ const revisionSchema = z.strictObject({ expectedRevision: z.number().int().min(1
 const handleSchema = z.strictObject({ handle: z.string().trim().min(1).max(60) });
 
 function validateStudioProfile(input: unknown): SaveStudioProfileInput {
-  return saveStudioProfileSchema.parse(input) as SaveStudioProfileInput;
+  const parsed = saveStudioProfileSchema.parse(input) as SaveStudioProfileInput;
+  // Server-side normalization of the layered design (never trust the client).
+  if (parsed.displayPrefs && "designLayers" in parsed.displayPrefs) {
+    parsed.displayPrefs = {
+      ...parsed.displayPrefs,
+      designLayers: normalizeLayersPref(parsed.displayPrefs["designLayers"]),
+    };
+  }
+  return parsed;
 }
 
 function validateHandle(input: unknown): { handle: string } {
