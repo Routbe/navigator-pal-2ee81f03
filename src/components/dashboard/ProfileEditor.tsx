@@ -105,6 +105,7 @@ import { VerifiedHandleBuilder } from "@/components/settings/VerifiedHandleBuild
 import { ProfileFavoritesAccordion } from "@/components/studio/ProfileFavoritesAccordion";
 import { MAX_FAVORITES } from "@/lib/favorites";
 import { ProfileView } from "@/components/profile/ProfileView";
+import { LayerStudioAccordion } from "@/components/studio/LayerStudioAccordion";
 import { TipPagePanel } from "@/components/dashboard/TipPagePanel";
 import {
   checkStudioHandle,
@@ -1049,6 +1050,11 @@ export function ProfileEditor({ variant = "verified" }: { variant?: ProfileVaria
                 prefs={prefs}
                 setPref={setPref}
                 verified={verified}
+              />
+              <LayerStudioAccordion
+                value={prefs.designLayers}
+                onChange={(v) => setPref("designLayers", v)}
+                blocks={blocks}
               />
             </Accordion>
           )}

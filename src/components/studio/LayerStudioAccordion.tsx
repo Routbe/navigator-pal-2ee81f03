@@ -314,8 +314,8 @@ export function LayerStudioAccordion({ value, onChange, blocks }: Props) {
                 <RowTools
                   visible={d.visible}
                   onToggle={() => setDec(i, { visible: !d.visible })}
-                  onUp={() => set({ ...layers, decorations: move(layers.decorations, i, i + 1) })}
-                  onDown={() => set({ ...layers, decorations: move(layers.decorations, i, i - 1) })}
+                  onUp={() => set({ ...layers, decorations: move(layers.decorations, i, i - 1) })}
+                  onDown={() => set({ ...layers, decorations: move(layers.decorations, i, i + 1) })}
                   onDelete={() => set({ ...layers, decorations: layers.decorations.filter((_, j) => j !== i) })}
                 />
               </div>
