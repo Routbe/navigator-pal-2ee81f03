@@ -84,7 +84,7 @@ export const EMPTY_LAYERS: DesignLayers = {
 };
 
 const HEX = /^#[0-9a-f]{6}$/i;
-const ID = /^[a-z0-9_-]{1,40}$/i;
+const ID = /^[a-z0-9_.:-]{1,64}$/i;
 
 const clamp = (v: unknown, min: number, max: number, fallback: number) => {
   const n = typeof v === "number" && Number.isFinite(v) ? v : fallback;
