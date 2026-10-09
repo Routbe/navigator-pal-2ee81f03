@@ -338,6 +338,9 @@ export function LayerStudioAccordion({ value, onChange, blocks }: Props) {
                       <ColorField label="Kleur" value={d.color} onChange={(v) => setDec(i, { color: v })} />
                     )}
                   </div>
+                  <div>
+                    {d.kind === "emoji" ? <StickerPicker onPick={(emoji) => setDec(i, { emoji })} /> : null}
+                  </div>
                   <Range label="Horizontaal (%)" value={d.x} min={0} max={100} onChange={(v) => setDec(i, { x: v })} />
                   <Range label="Verticaal (%)" value={d.y} min={0} max={100} onChange={(v) => setDec(i, { y: v })} />
                   <Range label="Grootte" value={d.size} min={12} max={200} onChange={(v) => setDec(i, { size: v })} />
