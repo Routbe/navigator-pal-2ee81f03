@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildAiPrompt, buildPrismaSchema, buildSqlSchema, DISCOVERY_URL } from "./integration-templates";
+import { claimsForScopes, buildAiPrompt, buildPrismaSchema, buildSqlSchema, DISCOVERY_URL } from "./integration-templates";
 import { hintFor } from "./debug-hints";
 
 const app = {
@@ -24,6 +24,11 @@ describe("integration templates", () => {
     expect(buildSqlSchema(app)).not.toContain("user_identities");
     expect(buildSqlSchema({ ...app, accountDiscoveryEnabled: true })).toContain("user_identities");
     expect(buildPrismaSchema({ ...app, accountDiscoveryEnabled: true })).toContain("model UserIdentity");
+  });
+  it("lists claims per granted scope only", () => {
+    expect(claimsForScopes(["openid", "email"])).toEqual(["sub", "email", "email_verified"]);
+    expect(claimsForScopes(["openid"])).not.toContain("picture");
+    expect(buildAiPrompt(app, "generic", "other")).toContain("email_verified");
   });
   it("maps errors to fixes", () => {
     expect(hintFor("missing_code_challenge")?.fix).toContain("S256");
