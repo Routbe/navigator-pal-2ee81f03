@@ -37,4 +37,4 @@
 - Phone verification uses a provider-neutral contract led by the Android gateway; chat channels count only after server confirmation. Why: sovereignty without unproven claims.
 
 
-- The layered Design Studio is stored as one JSON string in `display_prefs.designLayers` and normalized by `normalizeDesignLayers` on the server and in the renderer. Why: display_prefs only allows flat values, and client input must never reach the page unchecked.
+- Layered design lives as one JSON string in `display_prefs.designLayers`, normalized by `normalizeDesignLayers` server-side and on render. Why: display_prefs is flat; client input stays untrusted.
