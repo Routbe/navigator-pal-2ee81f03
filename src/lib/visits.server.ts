@@ -263,3 +263,108 @@ export async function readVisitStats(
     })),
   };
 }
+
+/* ---------- Klikmetingen ---------- */
+
+let clicksReady: Promise<void> | null = null;
+async function ensureClicksTable(): Promise<void> {
+  clicksReady ??= runSchemaEnsure(async () => {
+    await sql`
+      create table if not exists public.profile_link_clicks (
+        id bigserial primary key, profile_user_id uuid, handle text not null,
+        block_id text not null, label text, space text not null default 'alias',
+        visitor_hash text, created_at timestamptz not null default now()
+      )
+    `;
+  }, "visits.server.ts:clicks").catch((error) => {
+    clicksReady = null;
+    throw error;
+  });
+  return clicksReady;
+}
+
+const recentClicks = new Map<string, number>();
+const CLICK_DEDUPE_MS = 10_000;
+
+export async function recordLinkClick(input: {
+  handle: string;
+  blockId: string;
+  label?: string | null;
+  space: VisitSpace;
+  ip?: string | null;
+  userAgent?: string | null;
+}): Promise<{ recorded: boolean }> {
+  const handle = input.handle.trim().replace(/^@/, "").toLowerCase().slice(0, 64);
+  const blockId = input.blockId.trim().slice(0, 64);
+  if (!handle || !blockId) return { recorded: false };
+  const userAgent = (input.userAgent ?? "").slice(0, 400);
+  if (/bot|crawler|spider|preview|curl|wget|monitor|lighthouse/i.test(userAgent)) {
+    return { recorded: false };
+  }
+  const visitorHash = await dailyVisitorHash(input.ip ?? "", userAgent);
+  const key = `${visitorHash}:${handle}:${blockId}`;
+  const now = Date.now();
+  const seen = recentClicks.get(key);
+  if (seen && now - seen < CLICK_DEDUPE_MS) return { recorded: false };
+  recentClicks.set(key, now);
+  if (recentClicks.size > 5000) {
+    for (const [k, at] of recentClicks) if (now - at > CLICK_DEDUPE_MS) recentClicks.delete(k);
+  }
+  await ensureClicksTable();
+  const owner = (await sql`
+    select id from public.profiles where lower(username) = ${handle} limit 1
+  `) as Row[];
+  let ownerId = (owner[0]?.["id"] as string | undefined) ?? null;
+  if (!ownerId) {
+    try {
+      const alias = (await sql`
+        select user_id from public.alias_profiles where lower(handle) = ${handle} limit 1
+      `) as Row[];
+      ownerId = (alias[0]?.["user_id"] as string | undefined) ?? null;
+    } catch {
+      ownerId = null;
+    }
+  }
+  if (!ownerId) return { recorded: false };
+  await sql`
+    insert into public.profile_link_clicks
+      (profile_user_id, handle, block_id, label, space, visitor_hash)
+    values (${ownerId}, ${handle}, ${blockId}, ${(input.label ?? "").slice(0, 120) || null},
+            ${input.space === "root" ? "root" : "alias"}, ${visitorHash})
+  `;
+  return { recorded: true };
+}
+
+export type LinkClickStats = {
+  total: number;
+  perLink: Array<{ blockId: string; label: string | null; clicks: number; unique: number }>;
+};
+
+export async function readLinkClickStats(
+  userId: string,
+  options: { days?: number; space?: VisitSpace | "all" } = {},
+): Promise<LinkClickStats> {
+  const days = Math.min(Math.max(options.days ?? 30, 1), 365);
+  const spaceFilter = !options.space || options.space === "all" ? null : options.space;
+  try {
+    await ensureClicksTable();
+  } catch {
+    return { total: 0, perLink: [] };
+  }
+  const since = new Date(Date.now() - days * 86_400_000).toISOString();
+  const rows = (await sql`
+    select block_id, max(label) as label, count(*)::int as clicks,
+           count(distinct visitor_hash)::int as unique_clicks
+      from public.profile_link_clicks
+     where profile_user_id = ${userId} and created_at >= ${since}
+       and (${spaceFilter}::text is null or space = ${spaceFilter})
+     group by block_id order by 3 desc limit 25
+  `) as Row[];
+  const perLink = rows.map((r) => ({
+    blockId: String(r["block_id"]),
+    label: (r["label"] as string | null) ?? null,
+    clicks: Number(r["clicks"] ?? 0),
+    unique: Number(r["unique_clicks"] ?? 0),
+  }));
+  return { total: perLink.reduce((s, l) => s + l.clicks, 0), perLink };
+}

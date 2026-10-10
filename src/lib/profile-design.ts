@@ -1,3 +1,4 @@
+import { EXTRA_FOOTER_STYLES, extraFooterCss, type ExtraFooterStyle } from "@/lib/footer-styles-extra";
 /**
  * ROUT Design Studio — thema-presets, wallpapers, knopstijlen, typografie en
  * footer/branding. Alles leeft als extra velden binnen `profiles.display_prefs`
@@ -45,7 +46,8 @@ export type FooterStyle =
   | "neonbar"
   | "tape"
   | "gradient"
-  | "dotted";
+  | "dotted"
+  | ExtraFooterStyle;
 /** Uitlijning van de avatar onder de banner. */
 export type AvatarAlign = "left" | "center" | "right";
 
@@ -110,6 +112,7 @@ export const FOOTER_STYLES: { id: FooterStyle; label: string; hint: string }[] =
   { id: "tape", label: "Plakband", hint: "Schuin tapestrookje" },
   { id: "gradient", label: "Verloop", hint: "Zacht kleurverloop" },
   { id: "dotted", label: "Stippellijn", hint: "Gestippelde rand" },
+  ...EXTRA_FOOTER_STYLES.map(({ id, label, hint }) => ({ id, label, hint })),
 ];
 
 /** Footerstijlen met een decoratieve SVG-laag boven het blok. */
@@ -219,7 +222,7 @@ export function footerBlockStyle(
     case "dotted":
       return { borderTop: `2px dotted ${a}`, paddingTop: 16, width: "100%" };
     default:
-      return {};
+      return extraFooterCss(style, a, theme) ?? {};
   }
 }
 

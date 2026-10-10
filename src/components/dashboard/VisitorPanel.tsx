@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Eye, Globe, Loader2, Users } from "lucide-react";
-import { getMyVisitStats } from "@/lib/visits.functions";
-import type { VisitSpace, VisitStats } from "@/lib/visits.server";
+import { getMyLinkClickStats, getMyVisitStats } from "@/lib/visits.functions";
+import type { LinkClickStats, VisitSpace, VisitStats } from "@/lib/visits.server";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -68,17 +68,24 @@ export function VisitorPanel({ defaultSpace = "all" }: { defaultSpace?: SpaceFil
   const [stats, setStats] = useState<VisitStats | null>(null);
   const [loading, setLoading] = useState(true);
   const load = useServerFn(getMyVisitStats);
+  const loadClicks = useServerFn(getMyLinkClickStats);
+  const [clicks, setClicks] = useState<LinkClickStats | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      setStats(await load({ data: { days, space } }));
+      const [v, c] = await Promise.all([
+        load({ data: { days, space } }),
+        loadClicks({ data: { days, space } }).catch(() => null),
+      ]);
+      setStats(v);
+      setClicks(c);
     } catch {
       setStats(null);
     } finally {
       setLoading(false);
     }
-  }, [load, days, space]);
+  }, [load, loadClicks, days, space]);
 
   useEffect(() => {
     if (!user) return;
@@ -166,6 +173,29 @@ export function VisitorPanel({ defaultSpace = "all" }: { defaultSpace?: SpaceFil
                 </span>
                 <span className="w-8 shrink-0 text-right tabular-nums text-muted-foreground">
                   {l.visits}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-xs text-muted-foreground">{t("visits.empty")}</p>
+        )}
+      </div>
+
+      <div className="rounded-xl border border-border p-3">
+        <p className="mb-2 text-[11px] uppercase tracking-wide text-muted-foreground">
+          {t("visits.perLink")}
+        </p>
+        {clicks && clicks.perLink.length > 0 ? (
+          <ul className="space-y-1.5">
+            {clicks.perLink.map((l) => (
+              <li key={l.blockId} className="flex items-center gap-2 text-xs">
+                <span className="min-w-0 flex-1 truncate">{l.label || l.blockId}</span>
+                <span className="shrink-0 tabular-nums">
+                  {l.clicks} {t("visits.clicks")}
+                </span>
+                <span className="w-16 shrink-0 text-right tabular-nums text-muted-foreground">
+                  {l.unique} {t("visits.uniqueShort")}
                 </span>
               </li>
             ))}

@@ -52,3 +52,34 @@ export const getMyVisitStats = createServerFn({ method: "POST" })
       space: data.space ?? "all",
     })) as VisitStats;
   });
+
+/** Publiek: één klik op een link van een profiel (anoniem, faalt stil). */
+export const recordLinkClickFn = createServerFn({ method: "POST" })
+  .inputValidator(
+    (input: { handle: string; blockId: string; label?: string | null; space: VisitSpace }) => ({
+      handle: String(input.handle ?? ""),
+      blockId: String(input.blockId ?? ""),
+      label: input.label == null ? null : String(input.label),
+      space: (input.space === "root" ? "root" : "alias") as VisitSpace,
+    }),
+  )
+  .handler(async ({ data }) => {
+    try {
+      const { recordLinkClick } = await import("./visits.server");
+      const ip =
+        getRequestHeader("cf-connecting-ip") ??
+        (getRequestHeader("x-forwarded-for") ?? "").split(",")[0]?.trim() ??
+        null;
+      return await recordLinkClick({ ...data, ip, userAgent: getRequestHeader("user-agent") ?? null });
+    } catch {
+      return { recorded: false };
+    }
+  });
+
+export const getMyLinkClickStats = createServerFn({ method: "POST" })
+  .middleware([requireAuth])
+  .inputValidator((input: { days?: number; space?: VisitSpace | "all" } | undefined) => input ?? {})
+  .handler(async ({ data, context }) => {
+    const { readLinkClickStats } = await import("./visits.server");
+    return await readLinkClickStats(context.userId, { days: data.days ?? 30, space: data.space ?? "all" });
+  });
