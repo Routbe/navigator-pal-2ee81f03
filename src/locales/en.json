@@ -1193,5 +1193,8 @@
   "visits.space.all": "All",
   "visits.space.root": "rout.be/…",
   "visits.subtitle": "Privacy-friendly counts — no personal data, no cookies.",
-  "visits.title": "Visitors"
+  "visits.title": "Visitors",
+  "visits.perLink": "Clicks per link",
+  "visits.clicks": "clicks",
+  "visits.uniqueShort": "unique"
 }

@@ -81,6 +81,8 @@ import { downloadVCard } from "@/lib/vcard";
 import { profileText } from "@/lib/profile-i18n";
 
 import { useI18n } from "@/lib/i18n";
+import { useServerFn } from "@tanstack/react-start";
+import { recordLinkClickFn } from "@/lib/visits.functions";
 import { initialsFrom } from "@/components/UserAvatar";
 
 /** Swaps the browser tab icon for the profile's own favicon (or avatar). */
@@ -107,6 +109,14 @@ export function ProfileView({
   layout?: "auto" | "wide";
 }) {
   const { t: tr, locale } = useI18n();
+  const sendClick = useServerFn(recordLinkClickFn);
+  /** Anonieme klikmeting; faalt stil zodat een link altijd opent. */
+  const trackClick = (blockId: string, label: string | null | undefined) => {
+    if (!profile.username) return;
+    void sendClick({
+      data: { handle: profile.username, blockId, label: label ?? null, space: free ? "alias" : "root" },
+    }).catch(() => undefined);
+  };
   const t = themeOf(profile.theme);
   const prefs = parseDisplayPrefs(profile.display_prefs);
   const layers = normalizeDesignLayers(prefs.designLayers);
@@ -589,6 +599,7 @@ export function ProfileView({
                 href={blockHref(b)}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackClick(b.id, b.label)}
                 className={cn(
                   "flex min-h-12 w-full items-center gap-3 px-4 py-3 text-sm font-medium transition-opacity hover:opacity-80",
                   buttonEffectClass(prefs.buttonEffect),
